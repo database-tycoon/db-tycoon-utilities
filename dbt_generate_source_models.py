@@ -6,9 +6,11 @@ Usage:
 
 Examples:
     Use case 1. Generate SQL files for tables used in the project with the source function:
+        python <folder_if_any>/generate_source_models.py used_sources <source_name> <target_directory> <source_directory>
         python generate_source_models.py used_sources supermetrics ./models ./models/sources/supermetrics
 
     Use case 2. Generate SQL files for all tables defined in a YAML file:
+        python <folder_if_any>/generate_source_models.py yaml <source_name> <yaml_file_path>
         python generate_source_models.py yaml supermetrics ./models/sources/supermetrics/supermetrics.yml
 
 Arguments:
@@ -16,7 +18,7 @@ Arguments:
     source_name: Name of the source to generate files for.
 
 Additional arguments for "used_sources" mode:
-    project_directory: Path to the dbt project directory.
+    target_directory: Path to the directory in which to search for source function references.
     output_directory: Directory to save the generated SQL files.
 
 Additional argument for "yaml" mode:
@@ -137,19 +139,19 @@ def generate_source_models_from_yml(yaml_path, source_name):
                     logging.info(f"Created {file_path}")
 
 
-def generate_sql_files_from_used_sources(directory, source_name, output_dir):
+def generate_sql_files_from_used_sources(target_directory, source_name, output_dir):
     """
     Generates SQL files for tables used in the project for a given source.
 
     Args:
-        directory (str): Path to the dbt project directory.
+        target_directory (str): Path to the directory in which to search for source function references.
         source_name (str): Name of the source to generate files for.
         output_dir (str): Directory to save the generated SQL files.
 
     Returns:
         None
     """
-    used_sources = get_sources_used_with_source_func(directory, source_name)
+    used_sources = get_sources_used_with_source_func(target_directory, source_name)
     os.makedirs(output_dir, exist_ok=True)
 
     for table_name in used_sources.keys():
@@ -179,7 +181,7 @@ def main():
         source_name (str): Name of the source to generate files for.
         
     Additional arguments for "used_sources" mode:
-        project_directory (str): Path to the dbt project directory.
+        target_directory (str): Path to the directory in which to search for source function references.
         output_directory (str): Directory to save the generated SQL files.
     
     Additional argument for "yaml" mode:
@@ -203,10 +205,10 @@ def main():
                 "Usage for used_sources mode: python script_name.py used_sources <source_name> <project_directory> <output_directory>"
             )
             sys.exit(1)
-        project_directory = sys.argv[3]
+        target_directory = sys.argv[3]
         output_directory = sys.argv[4]
         generate_sql_files_from_used_sources(
-            project_directory, source_name, output_directory
+            target_directory, source_name, output_directory
         )
         logging.info("All SQL files have been generated from used sources.")
     elif mode in ["yaml", "yml"]:
